@@ -311,12 +311,14 @@ def display_data_cleaning_page(cleaning_function):
 
         # Download button
         csv = merged_cleaned_data.to_csv(index=False).encode('utf-8')
+        
+        file_name = st.text_input("Enter file name")
         st.download_button(
-            label="Download Cleaned Data",
-            data=csv,
-            file_name="cleaned_data.csv",
-            mime="text/csv"
-        )
+            label = "Download Cleaned Data",
+            data = csv,
+            file_name = file_name if file_name.endswith(".csv") else file_name + ".csv",
+            mime = "text/csv"
+            )
 
         # # Create two columns for download buttons
         # col1, col2 = st.columns(2)
