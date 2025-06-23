@@ -52,8 +52,8 @@ with st.sidebar.expander("**ZABBIX**", expanded=False):
     zabbix_ref_btn = st.button("Reference", use_container_width=True, key="zabbix_ref_btn")
 
 st.sidebar.subheader("**TREATMENT**")
-pemobile_btn = st.sidebar.button("PE-MOBILE", use_container_width=True, key="pemobile_btn")
-petransit_btn = st.sidebar.button("PE-TRANSIT", use_container_width=True, key="petransit_btn")
+pemobile_btn = st.sidebar.button("PE-MOBILE (HR)", use_container_width=True, key="pemobile_btn")
+petransit_btn = st.sidebar.button("PE-TRANSIT (IX)", use_container_width=True, key="petransit_btn")
 
 # Handle Navigation
 if homepage_btn:
