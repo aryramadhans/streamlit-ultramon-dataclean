@@ -17,7 +17,7 @@ st.sidebar.markdown(
             padding-top: 0;
         }
         .logo-container {
-            text-align: center;
+            text-align: left;
             margin-bottom: 0px;
         }
         .logo-container img {
