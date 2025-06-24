@@ -26,7 +26,7 @@ st.sidebar.markdown(
         }
     </style>
     <div class="logo-container">
-        <img src="img/logo_ultramon.jpg" alt="Logo">
+        <img src="https://streamlit.io/images/brand/streamlit-logo-primary-colormark-darktext.png" alt="Logo">
     </div>
     """,
     unsafe_allow_html=True
