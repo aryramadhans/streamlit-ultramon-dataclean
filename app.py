@@ -3,7 +3,7 @@ from dashboard_logic import display_data_cleaning_page, genie_clean, genie_p95, 
 from dashboard_view import display_home_page
 
 # Streamlit app configuration
-st.set_page_config(page_title="Ultramon Data Cleaning Dashboard", layout="wide", page_icon="img\logo_ultramon.jpg")
+st.set_page_config(page_title="Ultramon Data Cleaning Dashboard", layout="wide", page_icon="img/logo_ultramon.jpg")
 
 # Initialize session state for page navigation
 if 'current_page' not in st.session_state:
@@ -26,7 +26,7 @@ st.sidebar.markdown(
         }
     </style>
     <div class="logo-container">
-        <img src="../logo_ultramon.jpg" alt="Logo">
+        <img src="img/logo_ultramon.jpg" alt="Logo">
     </div>
     """,
     unsafe_allow_html=True
