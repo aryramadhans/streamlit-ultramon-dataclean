@@ -23,12 +23,12 @@ def genie_clean(content):
     df_genie = df_genie.drop(df_genie.columns[2], axis=1)
 
     # Rename the first column
-    df_genie = df_genie.rename(columns={df_genie.columns[0]: 'nearend', df_genie.columns[1]: 'farend'})
+    df_genie = df_genie.rename(columns={df_genie.columns[0]: 'NearEnd', df_genie.columns[1]: 'FarEnd'})
 
-    # Sort the values by farend column
-    df_genie = df_genie.sort_values(by='farend', ascending=False)
+    # Sort the values by FarEnd column
+    df_genie = df_genie.sort_values(by='FarEnd', ascending=False)
 
-    # Exclude unused values from column farend
+    # Exclude unused values from column FarEnd
     filtered = [
         'IANA',
         'ERX',
@@ -41,10 +41,10 @@ def genie_clean(content):
         'DNIC-NET-030',
         'CHINANET-HB'
     ]
-    df_genie = df_genie[~df_genie['farend'].str.upper().str.contains('|'.join(filtered))]
-    df_genie['farend'] = df_genie['farend'].str.upper()
-    df_genie['nearend'] = df_genie['nearend'].str.upper()
-    df_genie = df_genie.sort_values(by='farend', ascending=True)
+    df_genie = df_genie[~df_genie['FarEnd'].str.upper().str.contains('|'.join(filtered))]
+    df_genie['FarEnd'] = df_genie['FarEnd'].str.upper()
+    df_genie['NearEnd'] = df_genie['NearEnd'].str.upper()
+    df_genie = df_genie.sort_values(by='FarEnd', ascending=True)
 
     # Split the column name
     def rename_columns(col):
@@ -60,20 +60,20 @@ def genie_clean(content):
     df_genie.columns = new_columns
 
     # Melt the DataFrame
-    melted_genie = df_genie.melt(id_vars=['nearend', 'farend'], var_name='time', value_name='util')
-    melted_genie = melted_genie.sort_values(by=['farend', 'time'], ascending=True)
+    melted_genie = df_genie.melt(id_vars=['NearEnd', 'FarEnd'], var_name='Time', value_name='Util')
+    melted_genie = melted_genie.sort_values(by=['FarEnd', 'Time'], ascending=True)
 
     return melted_genie
 
 def genie_p95(content):
     df_p95 = pd.read_csv(content)
 
-    # Calculate P95 for each combination of nearend and farend
-    p95_values = df_p95.groupby(['nearend', 'farend'])['max'].quantile(0.95).reset_index()
-    p95_values.columns = ['nearend', 'farend', 'p95_max']
+    # Calculate P95 for each combination of node and farend
+    p95_values = df_p95.groupby(['node', 'farend'])['max'].quantile(0.95).reset_index()
+    p95_values.columns = ['node', 'farend', 'p95_max']
 
-    # Create a sorted pair column to handle nearend-farend and farend-nearend as the same
-    p95_values['pair'] = p95_values.apply(lambda row: tuple(sorted([row['nearend'], row['farend']])), axis=1)
+    # Create a sorted pair column to handle node-farend and farend-node as the same
+    p95_values['pair'] = p95_values.apply(lambda row: tuple(sorted([row['node'], row['farend']])), axis=1)
 
     # Select the row with the highest p95_max value for each unique pair
     result = p95_values.loc[p95_values.groupby('pair')['p95_max'].idxmax()]
@@ -103,10 +103,10 @@ def genie_ref_clean(content):
         'CHINANET-HB'
     ]
 
-    # df_ref = df_ref[df_ref['nearend'].str.upper() == nearend]
+    # df_ref = df_ref[df_ref['node'].str.upper() == node]
     df_ref = df_ref[~df_ref['farend'].str.upper().str.contains('|'.join(filtered))]
     df_ref['farend'] = df_ref['farend'].str.upper()
-    df_ref['nearend'] = df_ref['nearend'].str.upper()
+    df_ref['node'] = df_ref['node'].str.upper()
     df_ref = df_ref.sort_values(by='farend', ascending=True)
 
     # Reformating the ASBR(ATOM)
@@ -116,14 +116,14 @@ def genie_ref_clean(content):
     cat_atom = 'ASBR(ATOM)'
     dfasbr_ref.insert(2, 'kategori', cat_atom)
 
-    # dfasbr_ref = dfasbr_ref.rename(columns={dfasbr_ref.columns[0]: 'nearend', dfasbr_ref.columns[1]: 'farend'})
+    # dfasbr_ref = dfasbr_ref.rename(columns={dfasbr_ref.columns[0]: 'node', dfasbr_ref.columns[1]: 'farend'})
     dfasbr_ref['farend'] = dfasbr_ref['farend'].str.upper()
-    dfasbr_ref['nearend'] = dfasbr_ref['nearend'].str.upper()
+    dfasbr_ref['node'] = dfasbr_ref['node'].str.upper()
     dfasbr_ref = dfasbr_ref[dfasbr_ref['farend'].str.upper().str.contains('ASBR', na=False)]
 
     merged_ref = pd.concat([df_ref, dfasbr_ref],ignore_index=True)
 
-    cleaned_ref = merged_ref.drop_duplicates(subset=['nearend', 'farend'])
+    cleaned_ref = merged_ref.drop_duplicates(subset=['node', 'farend'])
 
     return cleaned_ref
 
