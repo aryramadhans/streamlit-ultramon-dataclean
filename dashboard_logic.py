@@ -14,6 +14,27 @@ def ultramon(content):
 
     return df_ultramon
 
+def ultramon_genie_clean(content):
+    # Read DataFrame from uploaded content
+    df_ultra_genie = pd.read_csv(content, usecols=[1, 2, 5, 6])
+
+    # Rename columns
+    df_ultra_genie = df_ultra_genie.rename(columns={df_ultra_genie.columns[0]: 'node', df_ultra_genie.columns[2]: 'max'})
+    
+    # Calculate P95 for each combination of node and farend
+    p95_values = df_ultra_genie.groupby(['node', 'farend'])['max'].quantile(0.95).reset_index()
+    p95_values.columns = ['node', 'farend', 'p95_max']
+
+    # Create a sorted pair column to handle node-farend and farend-node as the same
+    p95_values['pair'] = p95_values.apply(lambda row: tuple(sorted([row['node'], row['farend']])), axis=1)
+
+    # Select the row with the highest p95_max value for each unique pair
+    result_ultra_genie = p95_values.loc[p95_values.groupby('pair')['p95_max'].idxmax()]
+
+    # Drop the auxiliary 'pair' column
+    result_ultra_genie = result_ultra_genie.drop(columns=['pair'])
+
+    return result_ultra_genie
 
 def genie_clean(content):
     # Read DataFrame from uploaded content
@@ -23,12 +44,12 @@ def genie_clean(content):
     df_genie = df_genie.drop(df_genie.columns[2], axis=1)
 
     # Rename the first column
-    df_genie = df_genie.rename(columns={df_genie.columns[0]: 'NearEnd', df_genie.columns[1]: 'FarEnd'})
+    df_genie = df_genie.rename(columns={df_genie.columns[0]: 'node', df_genie.columns[1]: 'farend'})
 
-    # Sort the values by FarEnd column
-    df_genie = df_genie.sort_values(by='FarEnd', ascending=False)
+    # Sort the values by farend column
+    df_genie = df_genie.sort_values(by='farend', ascending=False)
 
-    # Exclude unused values from column FarEnd
+    # Exclude unused values from column farend
     filtered = [
         'IANA',
         'ERX',
@@ -41,10 +62,10 @@ def genie_clean(content):
         'DNIC-NET-030',
         'CHINANET-HB'
     ]
-    df_genie = df_genie[~df_genie['FarEnd'].str.upper().str.contains('|'.join(filtered))]
-    df_genie['FarEnd'] = df_genie['FarEnd'].str.upper()
-    df_genie['NearEnd'] = df_genie['NearEnd'].str.upper()
-    df_genie = df_genie.sort_values(by='FarEnd', ascending=True)
+    df_genie = df_genie[~df_genie['farend'].str.upper().str.contains('|'.join(filtered))]
+    df_genie['farend'] = df_genie['farend'].str.upper()
+    df_genie['node'] = df_genie['node'].str.upper()
+    df_genie = df_genie.sort_values(by='farend', ascending=True)
 
     # Split the column name
     def rename_columns(col):
@@ -60,8 +81,8 @@ def genie_clean(content):
     df_genie.columns = new_columns
 
     # Melt the DataFrame
-    melted_genie = df_genie.melt(id_vars=['NearEnd', 'FarEnd'], var_name='Time', value_name='Util')
-    melted_genie = melted_genie.sort_values(by=['FarEnd', 'Time'], ascending=True)
+    melted_genie = df_genie.melt(id_vars=['node', 'farend'], var_name='util_time', value_name='max')
+    melted_genie = melted_genie.sort_values(by=['farend', 'util_time'], ascending=True)
 
     return melted_genie
 

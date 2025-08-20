@@ -1,5 +1,5 @@
 import streamlit as st
-from dashboard_logic import display_data_cleaning_page, genie_clean, genie_p95, genie_ref_clean, ultramon, zabbix_clean
+from dashboard_logic import display_data_cleaning_page, ultramon_genie_clean, genie_clean, genie_p95, genie_ref_clean, ultramon, zabbix_clean
 from dashboard_view import display_home_page
 
 # Streamlit app configuration
@@ -40,6 +40,7 @@ homepage_btn = st.sidebar.button("Home", use_container_width=True, key="homepage
 st.sidebar.subheader("**Data Cleaning**")
 with st.sidebar.expander("**ULTRAMON**", expanded=False):
     ultramon_btn = st.button("Backbone", use_container_width=True, key="ultramon_btn")
+    ultramon_gen_btn = st.button("UltraGen P95", use_container_width=True, key="ultramon_gen_btn")
     ultramon_ref_btn = st.button("Reference", use_container_width=True, key="ultramon_ref_btn")
 
 with st.sidebar.expander("**GENIE**", expanded=False):
@@ -61,6 +62,8 @@ if homepage_btn:
     st.session_state.current_page = 'home'
 elif ultramon_btn:
     st.session_state.current_page = 'ultramon'
+elif ultramon_gen_btn:
+    st.session_state.current_page = 'ultramon_genie'
 elif ultramon_ref_btn:
     st.session_state.current_page = 'ultramon_ref'
 elif genie_atom_btn or genie_nonatom_btn:
@@ -85,6 +88,9 @@ if st.session_state.current_page == 'home':
 elif st.session_state.current_page == 'ultramon':
     st.title("Ultramon Data Cleaning")
     display_data_cleaning_page(ultramon)
+elif st.session_state.current_page == 'ultramon_genie':
+    st.title("Ultramon x Genie P95 Data Cleaning")
+    display_data_cleaning_page(ultramon_genie_clean)
 elif st.session_state.current_page == 'ultramon_ref':
     st.title("Ultramon Reference")
     # Add Ultramon reference content here
