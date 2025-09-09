@@ -300,21 +300,29 @@ def zabbix_clean(content):
 
     return df_zabbix
 
+def treatment_ultramon(content):
+    df_ultreat = pd.read_excel(content)
+    df_ultreat = df_ultreat.drop(['id', 'avg_in', 'avg_out', 'util_source', 'kategori'], axis=1)
 
-def display_data_cleaning_page(cleaning_function):
-    # File uploader
-    uploaded_files = st.file_uploader("Choose CSV files to cleaning the data",type="csv", accept_multiple_files=True)
+    df_ultreat = df_ultreat[(df_ultreat['max_in'] == 0) & (df_ultreat['max_out'] == 0)]
+    df_ultreat = df_ultreat.sort_values(by=['metro', 'port', 'util_time'])
+
+    return df_ultreat
+
+def display_data_csv(cleaning_function):
+    # File csv uploader
+    uploaded_csv = st.file_uploader("Choose CSV files to cleaning the data",type="csv", accept_multiple_files=True)
 
     # Display the total number of files submitted
-    if uploaded_files:
-        st.write(f"Total number of files submitted: {len(uploaded_files)}")
+    if uploaded_csv:
+        st.write(f"Total number of files submitted: {len(uploaded_csv)}")
 
     # Initialize an empty DataFrame for merging
     merged_cleaned_data = pd.DataFrame()
 
     # Process each file
-    if uploaded_files:
-        for uploaded_file in uploaded_files:
+    if uploaded_csv:
+        for uploaded_file in uploaded_csv:
             # st.subheader(f"File: {uploaded_file.name}")
 
             # Read file content
@@ -341,6 +349,47 @@ def display_data_cleaning_page(cleaning_function):
             mime = "text/csv"
             )
 
+def display_data_excel(cleaning_function):
+    # File excel uploader
+    uploaded_excel = st.file_uploader("Upload your Excel file", type=["xlsx", "xls"], accept_multiple_files=True)
+        
+    # Display the total number of files submitted
+    if uploaded_excel:
+        st.write(f"Total number of files submitted: {len(uploaded_excel)}")
+
+    # Initialize an empty DataFrame for merging
+    merged_cleaned_data = pd.DataFrame()
+
+    # Process each file
+    if uploaded_excel:
+        for uploaded_file in uploaded_excel:
+            # st.subheader(f"File: {uploaded_file.name}")
+
+            # Read file content
+            content = io.BytesIO(uploaded_file.read())
+
+            # Clean data using the imported logic
+            cleaned_data = cleaning_function(content)
+
+            # Append cleaned data to the merged DataFrame
+            merged_cleaned_data = pd.concat([merged_cleaned_data, cleaned_data], ignore_index=True)
+
+        # Display merged cleaned data
+        st.write("Merged Cleaned Data:")
+        st.dataframe(merged_cleaned_data)
+
+        # Download button
+        csv = merged_cleaned_data.to_csv(index=False).encode('utf-8')
+        
+        file_name = st.text_input("Enter file name")
+        st.download_button(
+            label = "Download Cleaned Data",
+            data = csv,
+            file_name = file_name if file_name.endswith(".csv") else file_name + ".csv",
+            mime = "text/csv"
+            )
+    
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         # # Create two columns for download buttons
         # col1, col2 = st.columns(2)
 

@@ -1,5 +1,5 @@
 import streamlit as st
-from dashboard_logic import display_data_cleaning_page, ultramon_genie_clean, genie_clean, genie_p95, genie_ref_clean, ultramon, zabbix_clean
+from dashboard_logic import display_data_csv, display_data_excel, ultramon_genie_clean, genie_clean, genie_p95, genie_ref_clean, ultramon, zabbix_clean, treatment_ultramon
 from dashboard_view import display_home_page
 
 # Streamlit app configuration
@@ -54,8 +54,8 @@ with st.sidebar.expander("**ZABBIX**", expanded=False):
     zabbix_ref_btn = st.button("Reference", use_container_width=True, key="zabbix_ref_btn")
 
 st.sidebar.subheader("**TREATMENT**")
-pemobile_btn = st.sidebar.button("PE-MOBILE (HR)", use_container_width=True, key="pemobile_btn")
-petransit_btn = st.sidebar.button("PE-TRANSIT (IX)", use_container_width=True, key="petransit_btn")
+pem_treat_btn = st.sidebar.button("PE-MOBILE (HR)", use_container_width=True, key="pem_treat_btn")
+pet_treat_btn = st.sidebar.button("PE-TRANSIT (IX)", use_container_width=True, key="pet_treat_btn")
 
 # Handle Navigation
 if homepage_btn:
@@ -76,10 +76,10 @@ elif zabbix_btn:
     st.session_state.current_page = 'zabbix_clean'
 elif zabbix_ref_btn:
     st.session_state.current_page = 'zabbix_ref'
-elif pemobile_btn:
-    st.session_state.current_page = 'pemobile'
-elif petransit_btn:
-    st.session_state.current_page = 'petransit'
+elif pem_treat_btn:
+    st.session_state.current_page = 'pem_treat'
+elif pet_treat_btn:
+    st.session_state.current_page = 'pet_treat'
 
 # Display current page
 if st.session_state.current_page == 'home':
@@ -87,31 +87,31 @@ if st.session_state.current_page == 'home':
     display_home_page()
 elif st.session_state.current_page == 'ultramon':
     st.title("Ultramon Data Cleaning")
-    display_data_cleaning_page(ultramon)
+    display_data_csv(ultramon)
 elif st.session_state.current_page == 'ultramon_genie':
     st.title("Ultramon x Genie P95 Data Cleaning")
-    display_data_cleaning_page(ultramon_genie_clean)
+    display_data_csv(ultramon_genie_clean)
 elif st.session_state.current_page == 'ultramon_ref':
     st.title("Ultramon Reference")
     # Add Ultramon reference content here
 elif st.session_state.current_page == 'genie_clean':
     st.title("Genie Data Cleaning")
-    display_data_cleaning_page(genie_clean)
+    display_data_csv(genie_clean)
 elif st.session_state.current_page == 'genie_p95':
     st.title("Genie P95 Data")
-    display_data_cleaning_page(genie_p95)
+    display_data_csv(genie_p95)
 elif st.session_state.current_page == 'genie_ref':
     st.title("Genie Reference")
-    display_data_cleaning_page(genie_ref_clean)
+    display_data_csv(genie_ref_clean)
 elif st.session_state.current_page == 'zabbix_clean':
     st.title("Zabbix Data Cleaning")
-    display_data_cleaning_page(zabbix_clean)
+    display_data_csv(zabbix_clean)
 elif st.session_state.current_page == 'zabbix_ref':
     st.title("Zabbix Reference")
     # Add Zabbix reference content here
-elif st.session_state.current_page == 'pemobile':
+elif st.session_state.current_page == 'pem_treat':
     st.title("PE-MOBILE Treatment Check")
-    # Add treatment check content here
-elif st.session_state.current_page == 'petransit':
+    display_data_excel(treatment_ultramon)
+elif st.session_state.current_page == 'pet_treat':
     st.title("PE-TRANSIT Treatment Check")
     # Add treatment check content here
