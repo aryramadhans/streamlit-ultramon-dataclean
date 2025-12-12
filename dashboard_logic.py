@@ -102,16 +102,8 @@ def genie_p95(content):
     # Drop the auxiliary 'pair' column
     result = result.drop(columns=['pair'])
 
-    return result
-
-def genie_ref_clean(content):
-    df_ref = pd.read_csv(content)
-    df_ref = df_ref.drop(df_ref.columns[2:], axis=1)
-
-    cat_atom = 'PE-MOBILE(ATOM)'
-    df_ref.insert(2, 'kategori', cat_atom)
     filtered = [
-        'IANA',
+        'IANA-BLOCK',
         'ERX',
         'T-D',
         'P-D',
@@ -121,7 +113,33 @@ def genie_ref_clean(content):
         'AON',
         'HSI',
         'TRANSIT',
-        'CHINANET-HB'
+        'CHINANET-HB',
+        'DNIC-NET-030'
+    ]
+
+    result_filtered = result[~result['farend'].str.upper().str.contains('|'.join(filtered))]
+
+    return result_filtered
+
+def genie_ref_clean(content):
+    df_ref = pd.read_csv(content)
+    df_ref = df_ref.drop(df_ref.columns[2:], axis=1)
+
+    cat_atom = 'PE-MOBILE(ATOM)'
+    df_ref.insert(2, 'kategori', cat_atom)
+    filtered = [
+        'IANA-BLOCK',
+        'ERX',
+        'T-D',
+        'P-D',
+        'TELKOM',
+        'RR-TSEL',
+        'ASBR',
+        'AON',
+        'HSI',
+        'TRANSIT',
+        'CHINANET-HB',
+        'DNIC-NET-030'
     ]
 
     # df_ref = df_ref[df_ref['node'].str.upper() == node]
@@ -300,29 +318,21 @@ def zabbix_clean(content):
 
     return df_zabbix
 
-def treatment_ultramon(content):
-    df_ultreat = pd.read_excel(content)
-    df_ultreat = df_ultreat.drop(['id', 'avg_in', 'avg_out', 'util_source', 'kategori'], axis=1)
 
-    df_ultreat = df_ultreat[(df_ultreat['max_in'] == 0) & (df_ultreat['max_out'] == 0)]
-    df_ultreat = df_ultreat.sort_values(by=['metro', 'port', 'util_time'])
-
-    return df_ultreat
-
-def display_data_csv(cleaning_function):
-    # File csv uploader
-    uploaded_csv = st.file_uploader("Choose CSV files to cleaning the data",type="csv", accept_multiple_files=True)
+def display_data_cleaning_page(cleaning_function):
+    # File uploader
+    uploaded_files = st.file_uploader("Choose CSV files to cleaning the data",type="csv", accept_multiple_files=True)
 
     # Display the total number of files submitted
-    if uploaded_csv:
-        st.write(f"Total number of files submitted: {len(uploaded_csv)}")
+    if uploaded_files:
+        st.write(f"Total number of files submitted: {len(uploaded_files)}")
 
     # Initialize an empty DataFrame for merging
     merged_cleaned_data = pd.DataFrame()
 
     # Process each file
-    if uploaded_csv:
-        for uploaded_file in uploaded_csv:
+    if uploaded_files:
+        for uploaded_file in uploaded_files:
             # st.subheader(f"File: {uploaded_file.name}")
 
             # Read file content
@@ -334,62 +344,85 @@ def display_data_csv(cleaning_function):
             # Append cleaned data to the merged DataFrame
             merged_cleaned_data = pd.concat([merged_cleaned_data, cleaned_data], ignore_index=True)
 
-        # Display merged cleaned data
-        st.write("Merged Cleaned Data:")
-        st.dataframe(merged_cleaned_data)
+        # Display line chart before dataframe
+        st.subheader("📈 Data Overview")
+        try:
+            # Create a simple line chart with numeric columns only
+            numeric_cols = merged_cleaned_data.select_dtypes(include=['number']).columns.tolist()
+            if numeric_cols:
+                # Limit to first 5 numeric columns for clarity
+                cols_to_plot = numeric_cols[:5]
+                st.line_chart(merged_cleaned_data[cols_to_plot])
+            else:
+                st.warning("No numeric columns found to display chart")
+        except Exception as e:
+            st.warning(f"Could not generate chart: {str(e)}")
 
-        # Download button
-        csv = merged_cleaned_data.to_csv(index=False).encode('utf-8')
+        # Create a two-column layout for Edit and Info
+        col1, col2 = st.columns([1, 3])
         
-        file_name = st.text_input("Enter file name")
-        st.download_button(
-            label = "Download Cleaned Data",
-            data = csv,
-            file_name = file_name if file_name.endswith(".csv") else file_name + ".csv",
-            mime = "text/csv"
-            )
-
-def display_data_excel(cleaning_function):
-    # File excel uploader
-    uploaded_excel = st.file_uploader("Upload your Excel file", type=["xlsx", "xls"], accept_multiple_files=True)
+        # Edit mode button
+        with col1:
+            if 'edit_mode' not in st.session_state:
+                st.session_state.edit_mode = False
+            
+            if st.button("✏️ Edit Mode" if not st.session_state.edit_mode else "✅ Exit Edit", use_container_width=True, key="edit_mode_btn"):
+                st.session_state.edit_mode = not st.session_state.edit_mode
+                st.rerun()
         
-    # Display the total number of files submitted
-    if uploaded_excel:
-        st.write(f"Total number of files submitted: {len(uploaded_excel)}")
-
-    # Initialize an empty DataFrame for merging
-    merged_cleaned_data = pd.DataFrame()
-
-    # Process each file
-    if uploaded_excel:
-        for uploaded_file in uploaded_excel:
-            # st.subheader(f"File: {uploaded_file.name}")
-
-            # Read file content
-            content = io.BytesIO(uploaded_file.read())
-
-            # Clean data using the imported logic
-            cleaned_data = cleaning_function(content)
-
-            # Append cleaned data to the merged DataFrame
-            merged_cleaned_data = pd.concat([merged_cleaned_data, cleaned_data], ignore_index=True)
+        # Display dataframe details
+        with col2:
+            st.info(f"📊 **Rows:** {len(merged_cleaned_data)} | **Columns:** {len(merged_cleaned_data.columns)}")
 
         # Display merged cleaned data
-        st.write("Merged Cleaned Data:")
-        st.dataframe(merged_cleaned_data)
-
-        # Download button
-        csv = merged_cleaned_data.to_csv(index=False).encode('utf-8')
+        st.subheader("📋 Merged Cleaned Data")
         
-        file_name = st.text_input("Enter file name")
-        st.download_button(
-            label = "Download Cleaned Data",
-            data = csv,
-            file_name = file_name if file_name.endswith(".csv") else file_name + ".csv",
-            mime = "text/csv"
+        if st.session_state.edit_mode:
+            st.warning("✏️ Edit Mode: You can now edit the data below")
+            edited_df = st.data_editor(merged_cleaned_data, use_container_width=True, num_rows="dynamic", key="data_editor")
+            # Store edited data in session state
+            st.session_state.merged_cleaned_data = edited_df
+        else:
+            st.dataframe(merged_cleaned_data, use_container_width=True)
+
+        # Download section
+        st.subheader("💾 Download Data")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            download_format = st.selectbox(
+                "📥 Download Data",
+                ["Select Format", "CSV", "XLSX"],
+                key="download_format",
+                help="Choose the format to download cleaned data"
             )
-    
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+            
+            file_name = st.text_input("Enter file name (without extension)", key="file_name_input")
+            
+            # Handle download based on selected format
+            if download_format != "Select Format" and file_name:
+                if download_format == "CSV":
+                    csv = merged_cleaned_data.to_csv(index=False).encode('utf-8')
+                    st.download_button(
+                        label="⬇️ Download as CSV",
+                        data=csv,
+                        file_name=f"{file_name}.csv",
+                        mime="text/csv",
+                        use_container_width=True
+                    )
+                elif download_format == "XLSX":
+                    excel_buffer = io.BytesIO()
+                    with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+                        merged_cleaned_data.to_excel(writer, index=False, sheet_name='CleanedData')
+                    excel_buffer.seek(0)
+                    st.download_button(
+                        label="⬇️ Download as XLSX",
+                        data=excel_buffer,
+                        file_name=f"{file_name}.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        use_container_width=True
+                    )
+
         # # Create two columns for download buttons
         # col1, col2 = st.columns(2)
 

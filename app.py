@@ -1,29 +1,17 @@
 import streamlit as st
-from dashboard_logic import display_data_csv, display_data_excel, ultramon_genie_clean, genie_clean, genie_p95, genie_ref_clean, ultramon, zabbix_clean, treatment_ultramon
+from dashboard_logic import display_data_cleaning_page, ultramon_genie_clean, genie_clean, genie_p95, genie_ref_clean, ultramon, zabbix_clean
 from dashboard_view import display_home_page
 
-# Streamlit app configuration
-st.set_page_config(page_title="Ultramon Data Cleaning Dashboard", layout="wide", page_icon="img/logo_ultramon.jpg")
+# ==================== Configuration ====================
+st.set_page_config(page_title="CNOP Data Cleaning Services", layout="wide", page_icon="img/logo_ultramon.jpg")
 
-# Initialize session state for page navigation
-if 'current_page' not in st.session_state:
-    st.session_state.current_page = 'home'
-
-# Sidebar setup
+# ==================== Sidebar Setup ====================
 st.sidebar.markdown(
     """
     <style>
-        .sidebar.sidebar-content {
-            padding-top: 0;
-        }
-        .logo-container {
-            text-align: left;
-            margin-bottom: 0px;
-        }
-        .logo-container img {
-            width: auto;
-            height: auto;
-        }
+        .sidebar.sidebar-content { padding-top: 0; }
+        .logo-container { text-align: left; margin-bottom: 0px; }
+        .logo-container img { width: auto; height: auto; }
     </style>
     <div class="logo-container">
         <img src="https://streamlit.io/images/brand/streamlit-logo-primary-colormark-darktext.png" alt="Logo">
@@ -32,86 +20,122 @@ st.sidebar.markdown(
     unsafe_allow_html=True
 )
 
-st.sidebar.header("**ULTRAMON DATA CLEANING DASHBOARD**", divider="orange", )
+st.sidebar.header("**CNOP DATA CLEANING**", divider="orange")
 
-# Sidebar for navigation
-homepage_btn = st.sidebar.button("Home", use_container_width=True, key="homepage_btn")
+# ==================== Navigation Menu ====================
+def render_sidebar_menu():
+    """Create sidebar navigation menu"""
+    pages = {}
+    
+    # Home button
+    if st.sidebar.button("Home", use_container_width=True, key="homepage_btn"):
+        pages['home'] = True
+    
+    # ULTRAMON section
+    with st.sidebar.expander("**ULTRAMON**", expanded=False):
+        if st.button("Backbone", use_container_width=True, key="ultramon_btn"):
+            pages['ultramon'] = True
+        if st.button("UltraGen P95", use_container_width=True, key="ultramon_gen_btn"):
+            pages['ultramon_genie'] = True
+        if st.button("Reference", use_container_width=True, key="ultramon_ref_btn"):
+            pages['ultramon_ref'] = True
+    
+    # GENIE section
+    with st.sidebar.expander("**GENIE**", expanded=False):
+        if st.button("ATOM", use_container_width=True, key="genie_atom_btn"):
+            pages['genie_clean'] = True
+        if st.button("NON-ATOM", use_container_width=True, key="genie_nonatom_btn"):
+            pages['genie_clean'] = True
+        if st.button("P95 Data Cleaning", use_container_width=True, key="genie_p95_btn"):
+            pages['genie_p95'] = True
+        if st.button("Reference", use_container_width=True, key="genie_ref_btn"):
+            pages['genie_ref'] = True
+    
+    # ZABBIX section
+    with st.sidebar.expander("**ZABBIX**", expanded=False):
+        if st.button("ATOM", use_container_width=True, key="zabbix_btn"):
+            pages['zabbix_clean'] = True
+        if st.button("Reference", use_container_width=True, key="zabbix_ref_btn"):
+            pages['zabbix_ref'] = True
+    
+    # TREATMENT section
+    st.sidebar.subheader("**TREATMENT**")
+    if st.sidebar.button("PE-MOBILE (HR)", use_container_width=True, key="pemobile_btn"):
+        pages['pemobile'] = True
+    if st.sidebar.button("PE-TRANSIT (IX)", use_container_width=True, key="petransit_btn"):
+        pages['petransit'] = True
+    
+    return pages
 
-st.sidebar.subheader("**Data Cleaning**")
-with st.sidebar.expander("**ULTRAMON**", expanded=False):
-    ultramon_btn = st.button("Backbone", use_container_width=True, key="ultramon_btn")
-    ultramon_gen_btn = st.button("UltraGen P95", use_container_width=True, key="ultramon_gen_btn")
-    ultramon_ref_btn = st.button("Reference", use_container_width=True, key="ultramon_ref_btn")
+# ==================== Session State Management ====================
+def init_session_state():
+    """Initialize session state variables"""
+    if 'current_page' not in st.session_state:
+        st.session_state.current_page = 'home'
+        st.session_state.last_page = None
 
-with st.sidebar.expander("**GENIE**", expanded=False):
-    genie_atom_btn = st.button("ATOM", use_container_width=True, key="genie_atom_btn")
-    genie_nonatom_btn = st.button("NON-ATOM", use_container_width=True, key="genie_nonatom_btn")
-    genie_p95_btn = st.button("P95 Data Cleaning", use_container_width=True, key="genie_p95_btn")
-    genie_ref_btn = st.button("Reference", use_container_width=True, key="genie_ref_btn")
+def reset_page_state():
+    """Reset page-specific state when navigating"""
+    if st.session_state.current_page != st.session_state.last_page:
+        keys_to_remove = ['edit_mode', 'data_editor', 'merged_cleaned_data', 'download_format', 'file_name_input', 'uploaded_files']
+        for key in keys_to_remove:
+            if key in st.session_state:
+                del st.session_state[key]
+        st.session_state.last_page = st.session_state.current_page
 
-with st.sidebar.expander("**ZABBIX**", expanded=False):
-    zabbix_btn = st.button("ATOM", use_container_width=True, key="zabbix_btn")
-    zabbix_ref_btn = st.button("Reference", use_container_width=True, key="zabbix_ref_btn")
+# ==================== Page Display ====================
+def center_title(title):
+    """Display centered title"""
+    st.markdown(f"<h1 style='text-align: center;'>{title}</h1>", unsafe_allow_html=True)
 
-st.sidebar.subheader("**TREATMENT**")
-pem_treat_btn = st.sidebar.button("PE-MOBILE (HR)", use_container_width=True, key="pem_treat_btn")
-pet_treat_btn = st.sidebar.button("PE-TRANSIT (IX)", use_container_width=True, key="pet_treat_btn")
+# Page configuration mapping
+PAGES = {
+    'home': {'title': '', 'func': display_home_page, 'data_func': None},
+    'ultramon': {'title': 'ULTRAMON DATA CLEANING', 'func': display_data_cleaning_page, 'data_func': ultramon},
+    'ultramon_genie': {'title': 'ULTRAMON x GENIE P95 DATA CLEANING', 'func': display_data_cleaning_page, 'data_func': ultramon_genie_clean},
+    'ultramon_ref': {'title': 'ULTRAMON REFERENCE CLEANING', 'func': None, 'data_func': None},
+    'genie_clean': {'title': 'GENIE DATA CLEANING', 'func': display_data_cleaning_page, 'data_func': genie_clean},
+    'genie_p95': {'title': 'GENIE P95 DATA', 'func': display_data_cleaning_page, 'data_func': genie_p95},
+    'genie_ref': {'title': 'GENIE REFERENCE', 'func': display_data_cleaning_page, 'data_func': genie_ref_clean},
+    'zabbix_clean': {'title': 'ZABBIX DATA CLEANING', 'func': display_data_cleaning_page, 'data_func': zabbix_clean},
+    'zabbix_ref': {'title': 'ZABBIX REFERENCE', 'func': None, 'data_func': None},
+    'pemobile': {'title': 'PE-MOBILE TREATMENT CHECK', 'func': None, 'data_func': None},
+    'petransit': {'title': 'PE-TRANSIT TREATMENT CHECK', 'func': None, 'data_func': None},
+}
 
-# Handle Navigation
-if homepage_btn:
-    st.session_state.current_page = 'home'
-elif ultramon_btn:
-    st.session_state.current_page = 'ultramon'
-elif ultramon_gen_btn:
-    st.session_state.current_page = 'ultramon_genie'
-elif ultramon_ref_btn:
-    st.session_state.current_page = 'ultramon_ref'
-elif genie_atom_btn or genie_nonatom_btn:
-    st.session_state.current_page = 'genie_clean'
-elif genie_p95_btn:
-    st.session_state.current_page = 'genie_p95'
-elif genie_ref_btn:
-    st.session_state.current_page = 'genie_ref'
-elif zabbix_btn:
-    st.session_state.current_page = 'zabbix_clean'
-elif zabbix_ref_btn:
-    st.session_state.current_page = 'zabbix_ref'
-elif pem_treat_btn:
-    st.session_state.current_page = 'pem_treat'
-elif pet_treat_btn:
-    st.session_state.current_page = 'pet_treat'
+def render_page(page_key):
+    """Render the current page"""
+    page_config = PAGES.get(page_key)
+    
+    if not page_config:
+        return
+    
+    # Display title if exists
+    if page_config['title']:
+        center_title(page_config['title'])
+    
+    # Display page content
+    if page_config['data_func']:
+        display_data_cleaning_page(page_config['data_func'])
+    elif page_config['func']:
+        page_config['func']()
 
-# Display current page
-if st.session_state.current_page == 'home':
-    st.empty()
-    display_home_page()
-elif st.session_state.current_page == 'ultramon':
-    st.title("Ultramon Data Cleaning")
-    display_data_csv(ultramon)
-elif st.session_state.current_page == 'ultramon_genie':
-    st.title("Ultramon x Genie P95 Data Cleaning")
-    display_data_csv(ultramon_genie_clean)
-elif st.session_state.current_page == 'ultramon_ref':
-    st.title("Ultramon Reference")
-    # Add Ultramon reference content here
-elif st.session_state.current_page == 'genie_clean':
-    st.title("Genie Data Cleaning")
-    display_data_csv(genie_clean)
-elif st.session_state.current_page == 'genie_p95':
-    st.title("Genie P95 Data")
-    display_data_csv(genie_p95)
-elif st.session_state.current_page == 'genie_ref':
-    st.title("Genie Reference")
-    display_data_csv(genie_ref_clean)
-elif st.session_state.current_page == 'zabbix_clean':
-    st.title("Zabbix Data Cleaning")
-    display_data_csv(zabbix_clean)
-elif st.session_state.current_page == 'zabbix_ref':
-    st.title("Zabbix Reference")
-    # Add Zabbix reference content here
-elif st.session_state.current_page == 'pem_treat':
-    st.title("PE-MOBILE Treatment Check")
-    display_data_excel(treatment_ultramon)
-elif st.session_state.current_page == 'pet_treat':
-    st.title("PE-TRANSIT Treatment Check")
-    # Add treatment check content here
+# ==================== Main App Logic ====================
+def main():
+    """Main application logic"""
+    init_session_state()
+    reset_page_state()
+    
+    # Render sidebar and get navigation
+    pages = render_sidebar_menu()
+    
+    # Update current page from navigation
+    for page_key in pages:
+        st.session_state.current_page = page_key
+        st.rerun()
+    
+    # Render current page
+    render_page(st.session_state.current_page)
+
+if __name__ == "__main__":
+    main()
