@@ -422,31 +422,3 @@ def display_data_cleaning_page(cleaning_function):
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                         use_container_width=True
                     )
-
-        # # Create two columns for download buttons
-        # col1, col2 = st.columns(2)
-
-        # # CSV Download Button
-        # with col1:
-        #     csv = merged_cleaned_data.to_csv(index=False).encode('utf-8')
-        #     st.download_button(
-        #         label="Download as CSV",
-        #         data=csv,
-        #         file_name="cleaned_data.csv",
-        #         mime="text/csv",
-        #         help="Download the cleaned data in CSV format"
-        #     )
-
-        # with col2:
-        #     excel_buffer = io.BytesIO()
-        #     with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
-        #         merged_cleaned_data.to_excel(writer, index=False, sheet_name='CleanedData')
-        #     excel_buffer.seek(0)
-
-        # st.download_button(
-        #     label="Download as Excel",
-        #     data=excel_buffer,
-        #     file_name="cleaned_data.xlsx",
-        #     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        #     help="Download the cleaned data in Excel format"
-        # )
