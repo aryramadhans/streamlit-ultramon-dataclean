@@ -4,6 +4,14 @@ UI components - handles all frontend display logic
 import streamlit as st
 from auth import validate_password, authenticate_user, register_user
 
+def display_home_page():
+    st.title("Ultramon Data Wrangler Dashboard")
+    # st.image("img/logo_ultramon.jpg", width=500)
+    st.markdown("### Features:")
+    st.write("1. Upload files to clean your data")
+    st.write("2. Preview the cleaned data")
+    st.write("3. Download the cleaned data")
+    st.write("Start by navigating to **Data Cleaning** in the sidebar.")
 
 def display_login_page():
     """Display login page"""
@@ -11,7 +19,6 @@ def display_login_page():
     
     with col2:
         st.markdown("<br><br><br>", unsafe_allow_html=True)
-        st.markdown("<h2 style='text-align: center;'>CNOP Dashboard</h2>", unsafe_allow_html=True)
         st.markdown("<h3 style='text-align: center;'>Login</h3>", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
         
@@ -44,7 +51,6 @@ def display_register_page():
     
     with col2:
         st.markdown("<br><br><br>", unsafe_allow_html=True)
-        st.markdown("<h2 style='text-align: center;'>CNOP Dashboard</h2>", unsafe_allow_html=True)
         st.markdown("<h3 style='text-align: center;'>Create Account</h3>", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
         
@@ -98,7 +104,7 @@ def setup_sidebar():
     with col2:
         st.image("img/logo_ultramon.jpg", width=150)
     
-    st.sidebar.markdown("<h3 style='text-align: center;'><b>CNOP DATA CLEANING</b></h3>", unsafe_allow_html=True)
+    st.sidebar.markdown("<h3 style='text-align: center;'><b>CNOP DATA WRANGLER</b></h3>", unsafe_allow_html=True)
     
     st.sidebar.markdown("""
         <style>

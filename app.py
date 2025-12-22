@@ -1,16 +1,11 @@
-"""
-CNOP Data Cleaning Dashboard - Main Application
-Simplified main entry point with modular architecture
-"""
 import streamlit as st
-from dashboard_logic import display_data_cleaning_page, ultramon_genie_clean, genie_clean, genie_p95, genie_ref_clean, ultramon, zabbix_clean
-from dashboard_view import display_home_page
+from logic import display_data_cleaning_page, ultramon_genie_clean, genie_clean, genie_p95, genie_ref_clean, ultramon, zabbix_clean
 from session import init_session_state, reset_page_state
-from ui import display_auth_page, setup_sidebar, display_user_info, display_logout_button, logout_confirmation, center_title
+from ui import display_home_page, display_auth_page, setup_sidebar, display_user_info, display_logout_button, logout_confirmation, center_title
 
 # ==================== Configuration ====================
 st.set_page_config(
-    page_title="CNOP Data Cleaning Services",
+    page_title="CNOP Data Wrangler",
     layout="wide",
     page_icon="img/logo_ultramon.jpg"
 )
@@ -21,13 +16,13 @@ init_session_state()
 # ==================== Page Configuration ====================
 PAGES = {
     'home': {'title': '', 'func': display_home_page, 'data_func': None},
-    'ultramon': {'title': 'ULTRAMON DATA CLEANING', 'func': display_data_cleaning_page, 'data_func': ultramon},
-    'ultramon_genie': {'title': 'ULTRAMON x GENIE P95 DATA CLEANING', 'func': display_data_cleaning_page, 'data_func': ultramon_genie_clean},
-    'ultramon_ref': {'title': 'ULTRAMON REFERENCE CLEANING', 'func': None, 'data_func': None},
-    'genie_clean': {'title': 'GENIE DATA CLEANING', 'func': display_data_cleaning_page, 'data_func': genie_clean},
+    'ultramon': {'title': 'ULTRAMON DATA', 'func': display_data_cleaning_page, 'data_func': ultramon},
+    'ultramon_genie': {'title': 'ULTRAMON x GENIE P95 DATA', 'func': display_data_cleaning_page, 'data_func': ultramon_genie_clean},
+    'ultramon_ref': {'title': 'ULTRAMON REFERENCE', 'func': None, 'data_func': None},
+    'genie_clean': {'title': 'GENIE DATA', 'func': display_data_cleaning_page, 'data_func': genie_clean},
     'genie_p95': {'title': 'GENIE P95 DATA', 'func': display_data_cleaning_page, 'data_func': genie_p95},
     'genie_ref': {'title': 'GENIE REFERENCE', 'func': display_data_cleaning_page, 'data_func': genie_ref_clean},
-    'zabbix_clean': {'title': 'ZABBIX DATA CLEANING', 'func': display_data_cleaning_page, 'data_func': zabbix_clean},
+    'zabbix_clean': {'title': 'ZABBIX DATA', 'func': display_data_cleaning_page, 'data_func': zabbix_clean},
     'zabbix_ref': {'title': 'ZABBIX REFERENCE', 'func': None, 'data_func': None},
 }
 
@@ -42,15 +37,15 @@ def render_sidebar_menu():
     with st.sidebar.expander("**ULTRAMON**", expanded=False):
         if st.button("Backbone", use_container_width=True, key="ultramon_btn"):
             pages['ultramon'] = True
-        if st.button("UltraGen P95", use_container_width=True, key="ultramon_gen_btn"):
+        if st.button("Ultramon ATOM & NON-ATOM P95 Data", use_container_width=True, key="ultramon_gen_btn"):
             pages['ultramon_genie'] = True
         if st.button("Reference", use_container_width=True, key="ultramon_ref_btn"):
             pages['ultramon_ref'] = True
     
     with st.sidebar.expander("**GENIE**", expanded=False):
-        if st.button("ATOM", use_container_width=True, key="genie_atom_btn"):
+        if st.button("Genie ATOM & NON-ATOM", use_container_width=True, key="genie_atom_btn"):
             pages['genie_clean'] = True
-        if st.button("P95 Data Cleaning", use_container_width=True, key="genie_p95_btn"):
+        if st.button("Genie P95 Data", use_container_width=True, key="genie_p95_btn"):
             pages['genie_p95'] = True
         if st.button("Reference", use_container_width=True, key="genie_ref_btn"):
             pages['genie_ref'] = True

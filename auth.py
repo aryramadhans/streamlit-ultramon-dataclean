@@ -1,6 +1,3 @@
-"""
-Authentication backend - handles user validation and password checking
-"""
 import re
 import hashlib
 

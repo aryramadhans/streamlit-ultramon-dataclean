@@ -2,3 +2,6 @@ streamlit
 psycopg2-binary
 pandas
 xlsxwriter
+gspread
+oauth2client
+plotly
